@@ -1,3 +1,92 @@
+--For Star Schema
+
+-- Customers Dimension Table
+CREATE TABLE Customers (
+    CustomerID INT PRIMARY KEY,
+    FirstName VARCHAR(255),
+    LastName VARCHAR(255),
+    Age INT
+);
+
+-- Products Dimension Table
+CREATE TABLE Products (
+    ProductID INT PRIMARY KEY,
+    ProductName VARCHAR(255)
+);
+
+-- Website Interactions Dimension Table
+CREATE TABLE WebsiteInteractions (
+    InteractionID INT PRIMARY KEY,
+    VisitDateTime DATETIME,
+    PageName VARCHAR(255),
+    Bounce INT,
+    UserID INT,
+    LandingPage VARCHAR(255),
+    TrafficSource VARCHAR(255)
+);
+
+-- AB Test Results Dimension Table
+CREATE TABLE ABTestResults (
+    ExperimentGroup VARCHAR(255),
+    Conversion INT
+);
+
+-- Order Details Fact Table
+CREATE TABLE OrderDetails (
+    OrderID INT,
+    ProductID INT,
+    Price DECIMAL(10, 2),
+    Quantity INT,
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+
+-- Sales Fact Table
+CREATE TABLE SalesFact (
+    SalesFactID INT PRIMARY KEY,
+    OrderID INT,
+    CustomerID INT,
+    ProductID INT,
+    OrderDate DATETIME,
+    Price DECIMAL(10, 2),
+    Quantity INT,
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID),
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID),
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID)
+);
+
+
+-- Populate Customers Table
+INSERT INTO Customers (CustomerID, FirstName, LastName, Age)
+SELECT DISTINCT CustomerID, FirstName, LastName, Age FROM DB1;
+
+-- Populate Products Table
+INSERT INTO Products (ProductID, ProductName)
+SELECT DISTINCT ProductID, ProductName FROM Products;
+
+-- Populate WebsiteInteractions Table
+INSERT INTO WebsiteInteractions (InteractionID, VisitDateTime, PageName, Bounce, UserID, LandingPage, TrafficSource)
+SELECT DISTINCT InteractionID, VisitDateTime, PageName, Bounce, UserID, LandingPage, TrafficSource FROM DB1;
+
+-- Populate ABTestResults Table
+INSERT INTO ABTestResults (ExperimentGroup, Conversion)
+SELECT DISTINCT ExperimentGroup, Conversion FROM DB1;
+
+-- Populate OrderDetails Table
+INSERT INTO OrderDetails (OrderID, ProductID, Price, Quantity)
+SELECT DISTINCT OrderID, ProductID, Price, Quantity FROM DB1;
+
+-- Populate SalesFact Table 
+INSERT INTO SalesFact (SalesFactID, OrderID, CustomerID, ProductID, OrderDate, Price, Quantity)
+SELECT SalesFactID, OrderID, CustomerID, ProductID, OrderDate, Price, Quantity FROM DB1;
+
+
+
+
+
+
+
+
 -- Data Exploration and Customer Segmentation
 -- Identify key tables and explore data
 SHOW TABLES;
