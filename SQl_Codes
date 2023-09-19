@@ -1,0 +1,89 @@
+-- Data Exploration and Customer Segmentation
+-- Identify key tables and explore data
+SHOW TABLES;
+SELECT * FROM Customers LIMIT 5;
+
+-- Segment customers by age group
+SELECT
+    CASE
+        WHEN Age < 30 THEN 'Under 30'
+        WHEN Age >= 30 AND Age < 45 THEN '30-44'
+        ELSE '45 and above'
+    END AS Age_Group,
+    COUNT(*) AS Customer_Count
+FROM Customers
+GROUP BY Age_Group;
+
+-- Sales Analysis and Customer Lifetime Value (CLV)
+-- Analyze sales and calculate CLV
+SELECT SUM(Price * Quantity) AS Total_Revenue
+FROM Orders;
+SELECT AVG(Price * Quantity) AS Avg_Order_Value
+FROM Orders;
+
+-- Calculate CLV for each customer
+SELECT
+    CustomerID,
+    SUM(Price * Quantity) AS Total_Spending
+FROM Orders
+GROUP BY CustomerID
+ORDER BY Total_Spending DESC;
+
+-- Web Analytics and Recommendation Engine
+-- Analyze website interactions and create a recommendation engine
+SELECT
+    PageName,
+    COUNT(*) AS Page_Views,
+    SUM(CASE WHEN Bounce = 1 THEN 1 ELSE 0 END) AS Bounce_Count,
+    SUM(CASE WHEN Bounce = 1 THEN 1 ELSE 0 END) / COUNT(*) AS Bounce_Rate
+FROM WebsiteInteractions
+GROUP BY PageName;
+
+-- Recommend products to a specific customer based on past purchases
+SELECT DISTINCT
+    P.ProductName AS Recommended_Product
+FROM Orders O
+JOIN Products P ON O.ProductID = P.ProductID
+WHERE O.CustomerID = '12345';
+
+-- A/B Testing and Data Visualization
+-- Conduct A/B tests and create data visualizations
+SELECT
+    ExperimentGroup,
+    AVG(Conversion) AS Conversion_Rate
+FROM ABTestResults
+GROUP BY ExperimentGroup;
+
+-- Reporting and Customer Retention
+-- Generate reports and analyze customer retention
+-- (Report generation may involve SQL queries for data extraction.)
+
+-- Calculate returning customer rate
+SELECT
+    COUNT(CASE WHEN Purchase_Count > 1 THEN 1 ELSE NULL END) AS Returning_Customers,
+    COUNT(*) AS Total_Customers,
+    (COUNT(CASE WHEN Purchase_Count > 1 THEN 1 ELSE NULL END) / COUNT(*)) * 100 AS Returning_Customer_Rate
+FROM (
+    SELECT
+        CustomerID,
+        COUNT(*) AS Purchase_Count
+    FROM Orders
+    GROUP BY CustomerID
+) CustomerPurchaseCount;
+
+-- Cart Abandonment Rate and Seasonal Product Demand
+-- Analyze cart abandonment rate and seasonal product demand
+-- (Additional SQL queries can be added for specific analysis.)
+
+-- Calculate customer churn rate
+SELECT
+    DATE_FORMAT(Month, '%Y-%m') AS Month,
+    (1 - (COUNT(DISTINCT ReturningCustomers) / COUNT(DISTINCT ActiveCustomers))) * 100 AS Churn_Rate
+FROM (
+    SELECT
+        DATE_FORMAT(OrderDate, '%Y-%m') AS Month,
+        CustomerID AS ReturningCustomers,
+        LAG(CustomerID) OVER (PARTITION BY CustomerID ORDER BY OrderDate) AS ActiveCustomers
+    FROM Orders
+) CustomerChurnData
+GROUP BY Month;
